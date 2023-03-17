@@ -23,7 +23,9 @@ function generatePrompt(reviewInfo) {
   Do you think the review is reliable?`;
 }
 
-async function analyzeReview(reviewInfo) {
+async function analyzeReview(reviewText) {
+  let reviewInfo = { text: reviewText };
+
   let systemContent = `You are a bot that checks for reliability of restaurant reviews.
                        Check if the review is genuine and warn the users if the review is a spam.`;
   let userPrompt = generatePrompt(reviewInfo);
