@@ -109,7 +109,7 @@ const placesAPI = new PlacesAPI(apiKey,url);
 async function myFunction() {
     const review = await placesAPI.getReviewsDict();
     console.log(review);
-    const userinfo = await placesAPI.getPlaceInfo();
+    const placeinfo = await placesAPI.getPlaceInfo();
     console.log(userinfo);
 }
 myFunction();
