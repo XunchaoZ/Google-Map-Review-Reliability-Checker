@@ -10,7 +10,7 @@ function createAnalyzeButton(reviewText) {
     analyzeButton.style.border = 'none';
     analyzeButton.style.borderRadius = '4px';
     analyzeButton.style.marginRight = '8px';
-    analyzeButton.addEventListener('click', () => analyzeReview(reviewText));
+    // analyzeButton.addEventListener('click', () => analyzeReview(reviewText));
     return analyzeButton;
   }
   
@@ -31,21 +31,27 @@ function createAnalyzeButton(reviewText) {
     const reviewMenus = document.querySelectorAll('button.PP3Y3d.S1qRNe');
   
     for (const menu of reviewMenus) {
+      let review = menu.parentNode.parentNode.parentNode.parentNode.childNodes[7];
+      if (review) {
+        console.log(review.querySelectorAll('div')[6].outerText);
+      }
+  
       if (!menu.previousElementSibling || !menu.previousElementSibling.classList.contains('analyze-review-button')) {
         const analyzeButton = createAnalyzeButton('reviewText');
         analyzeButton.classList.add('analyze-review-button');
-
+  
         const wrapper = document.createElement('div');
         wrapper.style.display = 'flex';
         wrapper.style.justifyContent = 'flex-end';
         wrapper.classList.add('analyze-review-wrapper');
-
+  
         menu.parentNode.insertBefore(wrapper, menu);
         wrapper.appendChild(analyzeButton);
         wrapper.appendChild(menu);
       }
     }
   }
+  
   
   // Periodically check for new review menus and add the "Analyze the review" option
   setInterval(addAnalyzeButtonToMenus, 1000);
