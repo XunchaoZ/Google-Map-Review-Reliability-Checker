@@ -1,0 +1,11 @@
+# Ignore Visual Studio files
+.vs/
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Ignore npm packages
+node_modules/
+package-lock.json

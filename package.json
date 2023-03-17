@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@googlemaps/google-maps-services-js": "^3.3.27",
+    "openai": "^3.2.1"
+  }
+}
