@@ -1,0 +1,33 @@
+{
+    "manifest_version": 3,
+    "name": "ReviewIntegrityChecker",
+    "version": "1.0",
+    "description": "Analyze the integrity of reviews on Google Maps using OpenAI's language model",
+    "permissions": [
+      "activeTab"
+    ],
+    "background": {
+      "service_worker": "background_script.js"
+    },
+    "content_scripts": [
+      {
+        "matches": [
+          "*://*.google.com/maps/*",
+          "*://*.google.ca/maps/*",
+          "*://*.google.co.uk/maps/*",
+          "*://*.google.com.au/maps/*",
+          "*://*.google.co.in/maps/*",
+          "*://*.google.co.jp/maps/*",
+          "*://*.google.de/maps/*",
+          "*://*.google.fr/maps/*",
+          "*://*.google.it/maps/*",
+          "*://*.google.es/maps/*",
+          "*://*.google.pt/maps/*",
+          "*://*.google.ru/maps/*",
+          "*://*.google.com.br/maps/*"
+        ],
+        "js": ["content_script.js"]
+      }
+    ]
+  }
+  
