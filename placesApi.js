@@ -1,6 +1,4 @@
-const { Client } = require('@googlemaps/google-maps-services-js');
-
-export class PlacesAPI {
+class PlacesAPI {
     constructor(apiKey,url) {
         this.apiKey = apiKey;
         this.url = url;
@@ -99,11 +97,11 @@ export class PlacesAPI {
     }
 }
 
+module.exports = PlacesAPI;
 
-// apiKey is not expirable, can be used throughout running
+// Sample usage:
+/*
 const apiKey = 'AIzaSyA2ft9Ti0ILphcvqQF3qvHvjY35LOhQxdk';
-
-// Sample usage: 
 const url = "https://www.google.com/maps/place/Rose+Bakery+%26+Cafe/@43.4642986,-80.5231153,18z/data=!4m6!3m5!1s0x882b46ae49d69c17:0xd949247f34b9b696!8m2!3d43.55811!4d-79.642758!16s%2Fg%2F1tc_04hc";
 const placesAPI = new PlacesAPI(apiKey,url);
 async function myFunction() {
@@ -113,4 +111,5 @@ async function myFunction() {
     console.log(userinfo);
 }
 myFunction();
+*/
 
