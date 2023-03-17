@@ -1,6 +1,6 @@
 const { Client } = require('@googlemaps/google-maps-services-js');
 
-class PlacesAPI {
+export class PlacesAPI {
     constructor(apiKey,url) {
         this.apiKey = apiKey;
         this.url = url;
