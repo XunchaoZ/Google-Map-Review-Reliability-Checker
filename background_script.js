@@ -63,6 +63,7 @@ extensionApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
 extensionApi.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (tab.url && tab.url.includes("www.google.com/maps/place")) {
     console.log("Initialization.")
+    console.log(tab.url);
     // Use the tab.url to call methods from PlacesAPI class and update the
     // the global variable placeInfo accordingly.
     const placesAPI = new PlacesAPI(PLACES_API_KEY, tab.url);

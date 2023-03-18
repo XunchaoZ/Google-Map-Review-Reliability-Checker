@@ -21,9 +21,9 @@ export class PlacesAPI {
     try {
       var reviewsDict = {};
       if (this.placeid == null) {
-        this.placeid = await placesAPI.getPlaceId();
+        this.placeid = await this.getPlaceId();
       }
-      const reviews = await placesAPI.getReviews(this.placeid);
+      const reviews = await this.getReviews(this.placeid);
       reviews.forEach(review => {
         reviewsDict[review.text] = review;
       });
@@ -37,7 +37,7 @@ export class PlacesAPI {
   async getPlaceInfo() {
     try {
       if (this.placeid == null) {
-        this.placeid = await placesAPI.getPlaceId();
+        this.placeid = await this.getPlaceId();
       }
       const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${this.placeid}&fields=name,rating,formatted_address&key=${this.apiKey}`;
       const response = await fetch(url);
@@ -60,7 +60,7 @@ export class PlacesAPI {
     const name = decodeURIComponent(this.url.split("/").pop().split("@")[0].replace(/\+/g, " "));
     const lat = this.url.split(",")[0].split("@")[1];
     const lng = this.url.split(",")[1];
-    const placeId = await placesAPI.getPlaceIdFromLatLng(lat, lng, name);
+    const placeId = await this.getPlaceIdFromLatLng(lat, lng, name);
     return placeId;
   }
 
