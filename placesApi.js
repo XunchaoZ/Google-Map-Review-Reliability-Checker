@@ -1,4 +1,4 @@
-class PlacesAPI {
+export class PlacesAPI {
   constructor(apiKey, url) {
     this.apiKey = apiKey;
     this.url = url;
@@ -97,7 +97,6 @@ class PlacesAPI {
   }
 }
 
-module.exports = PlacesAPI;
 
 // Sample usage:
 /*

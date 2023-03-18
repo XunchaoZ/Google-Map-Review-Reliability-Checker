@@ -1,4 +1,4 @@
-var PlacesAPI = require("./placesApi.js");
+import { PlacesAPI } from './placesApi.js';
 
 const PLACES_API_KEY = "AIzaSyA2ft9Ti0ILphcvqQF3qvHvjY35LOhQxdk";
 const OPENAI_API_KEY = "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";
