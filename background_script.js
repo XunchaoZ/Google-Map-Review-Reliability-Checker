@@ -16,6 +16,7 @@ function generatePrompt(reviewText) {
 }
 
 async function analyzeReview(reviewText) {
+  console.log('background');
   const systemContent = `You are a bot that checks for reliability of restaurant reviews.
                        Check if the review is genuine and warn the users if the review is a spam.`;
   const userPrompt = generatePrompt(reviewText);
@@ -47,9 +48,12 @@ async function analyzeReview(reviewText) {
 
 const extensionApi = typeof browser !== 'undefined' ? browser : chrome;
 
-extensionApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'analyze_review') {
-    analyzeReview(request.text).then(sendResponse);
+    analyzeReview(request.text).then((data) => {
+      sendResponse(data);
+      console.log(data);
+    });
     return true;
   }
 });

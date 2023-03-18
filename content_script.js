@@ -10,15 +10,16 @@ function createAnalyzeButton(reviewText) {
     analyzeButton.style.border = 'none';
     analyzeButton.style.borderRadius = '4px';
     analyzeButton.style.marginRight = '8px';
-    // analyzeButton.addEventListener('click', () => analyzeReview(reviewText));
+    analyzeButton.addEventListener('click', () => {console.log('button'); analyzeReview(reviewText)});
     return analyzeButton;
   }
   
   
   // Function to analyze the review using OpenAI API
   async function analyzeReview(reviewText) {
+    console.log('analyzeReview');
     const response = await chrome.runtime.sendMessage({ action: 'analyze_review', text: reviewText });
-  
+    console.log('analyzefinished');
     if (response.success) {
       alert(`Analysis result: ${response.result}`);
     } else {
@@ -33,11 +34,11 @@ function createAnalyzeButton(reviewText) {
     for (const menu of reviewMenus) {
       let review = menu.parentNode.parentNode.parentNode.parentNode.childNodes[7];
       if (review) {
-        console.log(review.querySelectorAll('div')[6].outerText);
+        review = review.querySelectorAll('span')[4].outerText;
       }
   
       if (!menu.previousElementSibling || !menu.previousElementSibling.classList.contains('analyze-review-button')) {
-        const analyzeButton = createAnalyzeButton('reviewText');
+        const analyzeButton = createAnalyzeButton(review);
         analyzeButton.classList.add('analyze-review-button');
   
         const wrapper = document.createElement('div');
