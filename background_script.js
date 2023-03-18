@@ -7,12 +7,8 @@ var placeInfo = {}; // name, rating, address
 
 function generatePrompt(reviewText) {
   // retrieve info
-  return `The following is a review for the restaurant ${placeInfo.name} at ${placeInfo.address}:
-  "${reviewText}"
-  The overall rating of the restaurant is ${placeInfo.rating} out of 5.
-  The reviewer gave a rating of ${placeInfo.reviews[reviewText].rating} out of 5.
-  The review was written ${placeInfo.reviews[reviewText].relative_time_description}.
-  Do you think the review is reliable?`;
+  return `Please commment on the review of a restaurant:
+  "${reviewText}"`;
 }
 
 async function analyzeReview(reviewText) {
@@ -40,7 +36,7 @@ async function analyzeReview(reviewText) {
 
   if (response.ok) {
     const data = await response.json();
-    return { success: true, result: data.choices[0].text.trim() };
+    return { success: true, result: data}
   } else {
     return { success: false };
   }
