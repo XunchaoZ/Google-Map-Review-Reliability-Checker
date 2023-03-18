@@ -18,13 +18,21 @@ function createAnalyzeButton(reviewText) {
   // Function to analyze the review using OpenAI API
   async function analyzeReview(reviewText) {
     console.log('analyzeReview');
-    const response = await chrome.runtime.sendMessage({ action: 'analyze_review', text: reviewText });
-    console.log('analyzefinished');
-    if (response.success) {
-      alert(`Analysis result: ${response.result}`);
-    } else {
-      alert('Failed to analyze the review. Please try again later.');
-    }
+    chrome.runtime.sendMessage({ action: 'analyze_review', text: reviewText }, (response) => {
+      console.log('analyzefinished');
+      if (response.success) {
+        alert(`Analysis result: ${response.result}`);
+      } else {
+        alert('Failed to analyze the review. Please try again later.');
+      }
+    });
+    // const response = await chrome.runtime.sendMessage({ action: 'analyze_review', text: reviewText });
+    // console.log('analyzefinished');
+    // if (response.success) {
+    //   alert(`Analysis result: ${response.result}`);
+    // } else {
+    //   alert('Failed to analyze the review. Please try again later.');
+    // }
   }
   
   // Function to add "Analyze the review" option to review menus

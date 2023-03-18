@@ -4,7 +4,9 @@
     "version": "1.0",
     "description": "Analyze the integrity of reviews on Google Maps using OpenAI's language model",
     "permissions": [
-      "activeTab"
+      "activeTab",
+      "webNavigation",
+      "tabs"
     ],
     "background": {
       "service_worker": "background_script.js",

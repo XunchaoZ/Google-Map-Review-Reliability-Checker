@@ -7,6 +7,7 @@ var placeInfo = {}; // name, rating, address
 
 function generatePrompt(reviewText) {
   // retrieve info
+  console.log(placeInfo);
   return `The following is a review for the restaurant ${placeInfo.name} at ${placeInfo.address}:
   "${reviewText}"
   The overall rating of the restaurant is ${placeInfo.rating} out of 5.
@@ -48,7 +49,8 @@ async function analyzeReview(reviewText) {
 
 const extensionApi = typeof browser !== 'undefined' ? browser : chrome;
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+extensionApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log('background');
   if (request.action === 'analyze_review') {
     analyzeReview(request.text).then((data) => {
       sendResponse(data);
@@ -58,8 +60,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-extensionApi.tabs.onUpdated.addListener(async (tabId, tab) => {
+extensionApi.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (tab.url && tab.url.includes("www.google.com/maps/place")) {
+    console.log("Initialization.")
     // Use the tab.url to call methods from PlacesAPI class and update the
     // the global variable placeInfo accordingly.
     const placesAPI = new PlacesAPI(PLACES_API_KEY, tab.url);
