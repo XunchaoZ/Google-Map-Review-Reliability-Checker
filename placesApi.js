@@ -1,5 +1,5 @@
 class PlacesAPI {
-  constructor(apiKey,url) {
+  constructor(apiKey, url) {
     this.apiKey = apiKey;
     this.url = url;
     this.placeid = null;
@@ -43,9 +43,9 @@ class PlacesAPI {
       const response = await fetch(url);
       const data = await response.json();
       const userInfo = {
-              name: data.result.name,
-              rating: data.result.rating,
-              address: data.result.formatted_address
+        name: data.result.name,
+        rating: data.result.rating,
+        address: data.result.formatted_address
       };
       return userInfo;
     } catch (error) {
