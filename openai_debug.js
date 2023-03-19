@@ -121,12 +121,11 @@ const disclaimers = [
 ];
 
 async function compareDisclaimer(lastSentence) {
-  const systemContent = `You are a bot that checks if sentences have the same meaning. Only answer "Yes" or "No".`;
+  const systemContent = `You are a bot that checks if sentences have the same meaning.`;
   let userPrompt = `You are given the following sentence: "${lastSentence}". Is the above sentence the same meaning as any one of the following sentences?\n`;
   for (const idx in disclaimers) {
     userPrompt += `\t"${disclaimers[idx]}"\n`;
   }
-  userPrompt += 'Please only answer "Yes" or "No" and nothing else.'
 
   console.log(userPrompt);
 
@@ -151,7 +150,7 @@ async function compareDisclaimer(lastSentence) {
   return gptResponse;
 }
 
-const testSentence = "It is also important to consider other reviews to get a more accurate assessment of the restaurant's reliability.";
+const testSentence = "The reviewer gave a rating of 2 stars and provided both positive and negative feedback, which suggests that the review is not a spam.";
 
 compareDisclaimer(testSentence).then(console.log);
 

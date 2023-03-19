@@ -73,7 +73,7 @@ function createPopoverContainer() {
   popover.style.border = '1px solid #ccc';
   popover.style.borderRadius = '4px';
   popover.style.padding = '16px';
-  popover.style.width = '200px';
+  popover.style.width = '400px';
   popover.style.zIndex = '1000';
   popover.style.display = 'none';
   popover.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
@@ -98,9 +98,10 @@ function showPopoverContainer(popover, analyzeButton, result, explanation) {
   else if (result <= 6) ratingColor = 'orange';
 
   popover.innerHTML += `
-    <h2 style="color: ${ratingColor}; margin-top: 0;">Rating: ${result}/10</h2>
+    <h2 style="color: ${ratingColor}; margin-top: 0;">Reliability Rating: ${result}/10</h2>
     <p>${explanation}</p>
-    <button style="cursor: pointer; padding: 6px 12px; font-size: 14px; color: #fff; background-color: #2196f3; border: none; border-radius: 4px;">Done</button>
+    <button style="margin-top: 10px; margin-bottom: 5px; cursor: pointer; padding: 6px 12px; font-size: 14px; color: #fff; background-color: #2196f3; border: none; border-radius: 4px;">Done</button>
+    <footer style="color: #636362;font-size: 10px;">Disclaimer: Since we do not have any information about the reviewer, we cannot be completely sure about their authenticity. It is also important to note that this is only one review and other reviews should also be considered for a more accurate assessment.</footer>
   `;
 
   popover.style.display = 'block';
@@ -132,6 +133,7 @@ async function analyzeReview(reviewText, rating, time, analyzeButton) {
       console.log(response.result);
       showPopoverContainer(newpopover, analyzeButton, response.result.rate, response.result.explanation);
     } else {
+      popover.remove();
       alert('Failed to analyze the review. Please try again later.');
     }
   });
