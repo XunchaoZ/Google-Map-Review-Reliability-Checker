@@ -1,4 +1,5 @@
-const OPENAI_API_KEY = "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";
+const OPENAI_API_KEY1 = "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";
+const OPENAI_API_KEY2 = "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";
 
 let placeInfo = {
   name: "The Lancaster Smokehouse",
@@ -9,22 +10,32 @@ let placeInfo = {
 };
 
 let reviewInfo = {
-  text: `The restaurant is a disaster, it has the worst food I've ever tasted, servers are super rude, never come to this place, i hate it so much`,
+  text: `UPDATED June 18, 2022:
+  What has happened to this place ?  We have patronized restaurant for years and last night was a poor experience
+  Server ( bartender ?? ) taking our table was rushed, not checking on us, did not offer food suggestions other than to tell us ( first thing out of her mouth) you know we're out of ribs and low on brisket right ). Not a hello, what can I get for you .  Nothing. Poor start.
+  Brisket sandwich was mediocre. Meat dry. No garnish. Fries BARELY warm. Had to ask and remind staff of extra sides that were ordered but not brought. Had specifically asked for extra pickles. None brought. Asked twice. Ketchup was empty at table. No vinegar for fries and no one around to ask about them. No follow up on meal quality by server during meal. No offer of more drinks during meal. But those questions were asked when bringing the cheque ??  Server training 101 not practiced here. Could go on but point is made. Stay away and save your money.
+  Has ownership changed here ?  Or new managers ?  Gone WAY down from previous. Won't be back
+  Below you can see how much we enjoyed before. Such a shame …`,
   rating: 1,
-  time: "a year ago"
+  time: "8 months ago"
 };
 
 function generatePrompt(reviewInfo) {
   // retrieve info
   return `${placeInfo.name} is a ${placeInfo.type} located at ${placeInfo.address}.
-  The overall rating of the restaurant is ${placeInfo.rating} out of 5.
+  The overall rating of the restaurant is ${placeInfo.rating} (lowest rating is 1 and highest rating is 5).
   There are a total of ${placeInfo.numReviews} reviews for the restaurant.
   The following is a review for the restaurant:
   "${reviewInfo.text}"
-  The reviewer gave a rating of ${reviewInfo.rating} out of 5.
+  The reviewer gave a rating of ${reviewInfo.rating} (lowest rating is 1 and highest rating is 5).
   The review was written ${reviewInfo.time}.
   Do you think the review is reliable?
-  Please return an answer between 0 to 10, where 0 stands for absolutely not reliable and 10 stands for absolutely reliable. Your answer should include the number first and some explanation. Your response should in JSON format, the first key is called "rate", should include a single number, which is the number you provided out of 10; the second key is called "explanation", which should include your explanation, in the explanation you should only provide information about this review, don't talk about that you can't say for sure or mention anything about considering multiple reviews`;
+  Please return an answer between 0 to 10, where 0 stands for absolutely not reliable and 10 stands for absolutely reliable. 
+  Your answer should include the number first and some explanation. 
+  Your response should in strict JSON format (include the brackets), the first key is called "rate" and should include a single number, which is the number you provided out of 10; the second key is called "explanation", which should include your explanation.
+  In the explanation you should only provide information about this review.
+  Please don't say that you can't say for sure or mention anything about considering multiple reviews.
+  Please be confident.`;
 }
 
 async function moderation(reviewText) {
@@ -33,13 +44,14 @@ async function moderation(reviewText) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENAI_API_KEY}`
+      "Authorization": `Bearer ${OPENAI_API_KEY2}`
     },
     body: JSON.stringify({
       input: reviewText
     })
   });
   const data = await response.json();
+  console.log(data);
   if (data.results[0].flagged) {
     let flaggedList = [];
     const flagCategories = data.results[0].categories;
@@ -73,7 +85,7 @@ async function analyzeReview(reviewInfo) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_API_KEY}`
+        "Authorization": `Bearer ${OPENAI_API_KEY2}`
       },
       body: JSON.stringify({
         model: "gpt-3.5-turbo",
@@ -85,10 +97,10 @@ async function analyzeReview(reviewInfo) {
       })
     });
     const data = await response.json();
-    return { success: true, result: data.choices[0].message.content };
+    const gptRespose = data.choices[0].message.content;
+    return { success: true, result: gptRespose };
   } catch (err) {
-    console.error(err);
-    return { success: false };
+    return { success: false, result: err };
   }
 }
 
