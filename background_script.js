@@ -4,6 +4,7 @@ const OPENAI_API_KEY2 = "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";
 var placeInfo = {}; // name, rating, address
 
 function parsePlaceInfo(placeInfoStr) {
+  console.log(placeInfoStr);
   const tokens = placeInfoStr.split('\n');
   return {
     name: tokens[0],
@@ -18,12 +19,12 @@ function generatePrompt(reviewInfo) {
   const placeInfo = parsePlaceInfo(reviewInfo.place);
   console.log(placeInfo);
   return `${placeInfo.name} is a ${placeInfo.type}.
-  The overall rating of the restaurant is ${placeInfo.rating} (lowest rating is 1 and highest rating is 5).
-  There are a total of ${placeInfo.numReviews} reviews for the restaurant.
-  The following is a review for the restaurant:
+  The overall rating of this place is ${placeInfo.rating} (lowest rating is 1 and highest rating is 5).
+  There are a total of ${placeInfo.numReviews} reviews for this place.
+  The following is a review for this place:
   "${reviewInfo.text}"
   The reviewer gave a rating of ${reviewInfo.rating} (lowest rating is 1 and highest rating is 5).
-  The review was written ${reviewInfo.time}.
+  The review was written ${reviewInfo.time.split('\n')[0]}. Note that the earlier the review was written, the less reliable the review is. Reviews written with the past 6 months are considered relevant.
   Do you think the review is reliable?
   Please return an answer between 0 to 10, where 0 stands for absolutely not reliable and 10 stands for absolutely reliable.
   Your answer should include the number first and some explanation. 
@@ -62,7 +63,16 @@ async function moderation(reviewText) {
 }
 
 async function analyzeReview(reviewInfo) {
-  const systemContent = `You are a bot that checks for reliability of restaurant reviews.
+  if (reviewInfo.text === "") {
+    return {
+      success: true,
+      result: {
+        rate: 0,
+        explanation: "The reviewer didn't give any comments."
+      }
+    }
+  }
+  const systemContent = `You are a bot that checks for reliability of place reviews.
                        Check if the review is genuine and warn the users if the review is a spam.`;
   const userPrompt = generatePrompt(reviewInfo);
   try {
@@ -72,7 +82,13 @@ async function analyzeReview(reviewInfo) {
       for (const cat in moderationResult.categories) {
         flagMsg += " " + String(cat);
       }
-      return { success: false, result: flagMsg };
+      return { 
+        success: true, 
+        result: {
+          rate: 0,
+          explanation: flagMsg
+        }
+      };
     }
 
     const apiURL = "https://api.openai.com/v1/chat/completions";

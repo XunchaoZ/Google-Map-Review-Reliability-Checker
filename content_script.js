@@ -8,7 +8,7 @@ function createAnalyzeButton(reviewText, rating, time) {
   analyzeButton.style.padding = '6px 12px';
   analyzeButton.style.fontSize = '14px';
   analyzeButton.style.color = '#ffffff';
-  analyzeButton.style.backgroundColor = '#9e9e9e';
+  analyzeButton.style.backgroundColor = '#5fce72';
   analyzeButton.style.border = 'none';
   analyzeButton.style.borderRadius = '4px';
   analyzeButton.style.marginLeft = 'auto';
