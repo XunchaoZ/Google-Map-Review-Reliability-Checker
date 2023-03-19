@@ -1,49 +1,108 @@
-import { PlacesAPI } from './placesApi.js';
-
-const PLACES_API_KEY = "AIzaSyA2ft9Ti0ILphcvqQF3qvHvjY35LOhQxdk";
-const OPENAI_API_KEY = "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";
+const OPENAI_API_KEY1 = "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";
+const OPENAI_API_KEY2 = "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";
 
 var placeInfo = {}; // name, rating, address
 
-function generatePrompt(reviewText) {
-  // retrieve info
-  console.log(placeInfo);
-  return `The following is a review for the restaurant ${placeInfo.name} at ${placeInfo.address}:
-  "${reviewText}"
-  The overall rating of the restaurant is ${placeInfo.rating} out of 5.
-  The reviewer gave a rating of ${placeInfo.reviews[reviewText].rating} out of 5.
-  The review was written ${placeInfo.reviews[reviewText].relative_time_description}.
-  Do you think the review is reliable?`;
+function parsePlaceInfo(placeInfoStr) {
+  const tokens = placeInfoStr.split('\n');
+  return {
+    name: tokens[0],
+    rating: tokens[1],
+    numReviews: tokens[2].split(' ')[0],
+    type: tokens[3]
+  };
 }
 
-async function analyzeReview(reviewText) {
-  console.log('background');
-  const systemContent = `You are a bot that checks for reliability of restaurant reviews.
-                       Check if the review is genuine and warn the users if the review is a spam.`;
-  const userPrompt = generatePrompt(reviewText);
+function generatePrompt(reviewInfo) {
+  // retrieve info
+  const placeInfo = parsePlaceInfo(reviewInfo.place);
+  console.log(placeInfo);
+  return `${placeInfo.name} is a ${placeInfo.type}.
+  The overall rating of the restaurant is ${placeInfo.rating} (lowest rating is 1 and highest rating is 5).
+  There are a total of ${placeInfo.numReviews} reviews for the restaurant.
+  The following is a review for the restaurant:
+  "${reviewInfo.text}"
+  The reviewer gave a rating of ${reviewInfo.rating} (lowest rating is 1 and highest rating is 5).
+  The review was written ${reviewInfo.time}.
+  Do you think the review is reliable?
+  Please return an answer between 0 to 10, where 0 stands for absolutely not reliable and 10 stands for absolutely reliable.
+  Your answer should include the number first and some explanation. 
+  Your response should in strict JSON format that includes the opening and closing curly brackets. 
+  The first key is called "rate" and should include a single number, which is the number you provided out of 10; the second key is called "explanation", which should include your explanation.
+  In the explanation you should only provide information about this review.
+  Please don't say that you can't say for sure or mention anything about considering multiple reviews.
+  Please be confident.`;
+}
 
-  const apiURL = "https://api.openai.com/v1/chat/completions";
+async function moderation(reviewText) {
+  const apiURL = "https://api.openai.com/v1/moderations";
   const response = await fetch(apiURL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENAI_API_KEY}`
+      "Authorization": `Bearer ${OPENAI_API_KEY2}`
     },
     body: JSON.stringify({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {role: "system", content: systemContent},
-        {role: "user", content: userPrompt}
-      ],
-      temperature: 0.53
+      input: reviewText
     })
   });
-
-  if (response.ok) {
-    const data = await response.json();
-    return { success: true, result: data.choices[0].text.trim() };
+  const data = await response.json();
+  if (data.results[0].flagged) {
+    let flaggedList = [];
+    const flagCategories = data.results[0].categories;
+    for (const cat in flagCategories) {
+      if (flagCategories[cat]) {
+        flaggedList.push(cat);
+      }
+    }
+    return { flagged: true, categories: flaggedList };
   } else {
-    return { success: false };
+    return { flagged: false };
+  }
+}
+
+async function analyzeReview(reviewInfo) {
+  const systemContent = `You are a bot that checks for reliability of restaurant reviews.
+                       Check if the review is genuine and warn the users if the review is a spam.`;
+  const userPrompt = generatePrompt(reviewInfo);
+  try {
+    const moderationResult = await moderation(reviewInfo.text);
+    if (moderationResult.flagged) {
+      let flagMsg = "The review is flagged for the following inappropriate elements:";
+      for (const cat in moderationResult.categories) {
+        flagMsg += " " + String(cat);
+      }
+      return { success: false, result: flagMsg };
+    }
+
+    const apiURL = "https://api.openai.com/v1/chat/completions";
+    const response = await fetch(apiURL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY2}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {role: "system", content: systemContent},
+          {role: "user", content: userPrompt}
+        ],
+        temperature: 0.53
+      })
+    });
+    const data = await response.json();
+    const gptResponse = data.choices[0].message.content;
+    let gptResponseJSON = {};
+    try {
+      gptResponseJSON = JSON.parse(gptResponse);
+    } catch {
+      gptResponse = `{${gptResponse}}`;
+      gptResponseJSON = JSON.parse(gptResponse);
+    }
+    return { success: true, result: gptResponseJSON };
+  } catch (err) {
+    return { success: false, result: err };
   }
 }
 
@@ -52,22 +111,7 @@ const extensionApi = typeof browser !== 'undefined' ? browser : chrome;
 extensionApi.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('background');
   if (request.action === 'analyze_review') {
-    analyzeReview(request.text).then((data) => {
-      sendResponse(data);
-      console.log(data);
-    });
+    analyzeReview(request).then(sendResponse);
     return true;
-  }
-});
-
-extensionApi.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (tab.url && tab.url.includes("www.google.com/maps/place")) {
-    console.log("Initialization.")
-    console.log(tab.url);
-    // Use the tab.url to call methods from PlacesAPI class and update the
-    // the global variable placeInfo accordingly.
-    const placesAPI = new PlacesAPI(PLACES_API_KEY, tab.url);
-    placeInfo = await placesAPI.getPlaceInfo();
-    placeInfo.reviews = await placesAPI.getReviewsDict();
   }
 });

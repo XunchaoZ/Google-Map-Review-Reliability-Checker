@@ -30,7 +30,7 @@ async function analyzeReview(reviewText, rating, time) {
   console.log(message);
   chrome.runtime.sendMessage(message, (response) => {
     if (response.success) {
-      alert(`Analysis result: ${response.result.choices[0].message.content}`);
+      alert(`Analysis result: ${JSON.stringify(response.result)}`);
     } else {
       alert('Failed to analyze the review. Please try again later.');
     }

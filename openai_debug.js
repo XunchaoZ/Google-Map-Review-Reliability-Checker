@@ -32,7 +32,8 @@ function generatePrompt(reviewInfo) {
   Do you think the review is reliable?
   Please return an answer between 0 to 10, where 0 stands for absolutely not reliable and 10 stands for absolutely reliable. 
   Your answer should include the number first and some explanation. 
-  Your response should in strict JSON format (include the brackets), the first key is called "rate" and should include a single number, which is the number you provided out of 10; the second key is called "explanation", which should include your explanation.
+  Your response should in strict JSON format that includes the opening and closing curly brackets. 
+  The first key is called "rate" and should include a single number, which is the number you provided out of 10; the second key is called "explanation", which should include your explanation.
   In the explanation you should only provide information about this review.
   Please don't say that you can't say for sure or mention anything about considering multiple reviews.
   Please be confident.`;
@@ -97,8 +98,15 @@ async function analyzeReview(reviewInfo) {
       })
     });
     const data = await response.json();
-    const gptRespose = data.choices[0].message.content;
-    return { success: true, result: gptRespose };
+    const gptResponse = data.choices[0].message.content;
+    let gptResponseJSON = {};
+    try {
+      gptResponseJSON = JSON.parse(gptResponse);
+    } catch {
+      gptResponse = `{${gptResponse}}`;
+      gptResponseJSON = JSON.parse(gptResponse);
+    }
+    return { success: true, result: gptResponseJSON };
   } catch (err) {
     return { success: false, result: err };
   }
