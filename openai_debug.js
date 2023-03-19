@@ -112,13 +112,46 @@ async function analyzeReview(reviewInfo) {
   }
 }
 
-analyzeReview(reviewInfo).then((response) => {
-  if (response.success) {
-    console.log(response.result);
-  } else if (response.result){
-    console.error(response.result);
-  } else {
-    console.error("GPT error!");
+const disclaimers = [
+  "Since we do not have any information about the reviewer, we cannot be completely sure about their authenticity.",
+  "It is important to note that this is only one review and other reviews should also be considered for a more accurate assessment.",
+  "It is important to consider other reviews as well before making a final decision.",
+  "It should be taken with a grain of salt and considered alongside other reviews.",
+  "It is recommended to read other reviews as well to get a more accurate assessment."
+];
+
+async function compareDisclaimer(lastSentence) {
+  const systemContent = `You are a bot that checks if sentences have the same meaning. Only answer "Yes" or "No".`;
+  let userPrompt = `You are given the following sentence: "${lastSentence}". Is the above sentence the same meaning as any one of the following sentences?\n`;
+  for (const idx in disclaimers) {
+    userPrompt += `\t"${disclaimers[idx]}"\n`;
   }
-});
+  userPrompt += 'Please only answer "Yes" or "No" and nothing else.'
+
+  console.log(userPrompt);
+
+  const apiURL = "https://api.openai.com/v1/chat/completions";
+  const response = await fetch(apiURL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${OPENAI_API_KEY2}`
+    },
+    body: JSON.stringify({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {role: "system", content: systemContent},
+        {role: "user", content: userPrompt}
+      ],
+      temperature: 0.1
+    })
+  });
+  const data = await response.json();
+  const gptResponse = data.choices[0].message.content;
+  return gptResponse;
+}
+
+const testSentence = "It is also important to consider other reviews to get a more accurate assessment of the restaurant's reliability.";
+
+compareDisclaimer(testSentence).then(console.log);
 

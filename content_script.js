@@ -21,6 +21,7 @@ function createAnalyzeButton(reviewText, rating, time) {
     const time = analyzeButton.getAttribute('data-time');
     analyzeReview(reviewText, rating, time, analyzeButton);
   });
+  
   return analyzeButton;
 }
 
@@ -91,15 +92,20 @@ function createPopoverContainer() {
 // Function to show the popover container with the analysis result
 function showPopoverContainer(popover, analyzeButton, result, explanation) {
   document.body.appendChild(popover);
-  const ratingColor = result >= 5 ? 'green' : 'red';
+
+  let ratingColor = 'green';
+  if (result <= 3) ratingColor = 'red';
+  else if (result <= 6) ratingColor = 'orange';
+
   popover.innerHTML += `
     <h2 style="color: ${ratingColor}; margin-top: 0;">Rating: ${result}/10</h2>
     <p>${explanation}</p>
     <button style="cursor: pointer; padding: 6px 12px; font-size: 14px; color: #fff; background-color: #2196f3; border: none; border-radius: 4px;">Done</button>
   `;
+
   popover.style.display = 'block';
-  popover.style.left = `400px`;
-  popover.style.top = `100px`;
+  popover.style.left = `400px`; // 400
+  popover.style.top = `100px`; // 100
 
   const doneButton = popover.querySelector('button');
   doneButton.addEventListener('click', () => {
@@ -143,7 +149,7 @@ function addAnalyzeButtonToMenus() {
     if (review) {
       reviewText = review.querySelector('span.wiI7pd').outerText;
       rating = review.querySelector('span.kvMYJc').ariaLabel;
-      time = review.querySelector('div.DU9Pgb').outerText;
+      time = review.querySelector('div.DU9Pgb').outerText.split('\n')[0];
       if (!menu.previousElementSibling || !menu.previousElementSibling.classList.contains('analyze-review-button')) {
         const analyzeButton = createAnalyzeButton(reviewText, rating, time);
         let bar = review.querySelector('div.DU9Pgb');
