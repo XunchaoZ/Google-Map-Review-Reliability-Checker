@@ -19,18 +19,65 @@ function createAnalyzeButton(reviewText, rating, time) {
     const reviewText = analyzeButton.getAttribute('data-review-text');
     const rating = analyzeButton.getAttribute('data-rating');
     const time = analyzeButton.getAttribute('data-time');
-    analyzeReview(reviewText, rating, time);
+    analyzeReview(reviewText, rating, time, analyzeButton);
   });
   return analyzeButton;
 }
 
+// Function to create the popover container
+function createPopoverContainer() {
+  const popover = document.createElement('div');
+  popover.style.position = 'absolute';
+  popover.style.backgroundColor = '#fff';
+  popover.style.border = '1px solid #ccc';
+  popover.style.borderRadius = '4px';
+  popover.style.padding = '16px';
+  popover.style.width = '200px';
+  popover.style.zIndex = '1000';
+  popover.style.display = 'none';
+  popover.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+
+  const arrow = document.createElement('div');
+  arrow.style.position = 'absolute';
+  arrow.style.left = '10px';
+  arrow.style.top = '-10px';
+  arrow.style.border = '5px solid transparent';
+  arrow.style.borderBottomColor = '#ccc';
+
+  popover.appendChild(arrow);
+  return popover;
+}
+
+// Function to show the popover container with the analysis result
+function showPopoverContainer(popover, analyzeButton, result, explanation) {
+  const ratingColor = result >= 5 ? 'green' : 'red';
+  popover.innerHTML += `
+    <h2 style="color: ${ratingColor}; margin-top: 0;">Rating: ${result}/10</h2>
+    <p>${explanation}</p>
+    <button style="cursor: pointer; padding: 6px 12px; font-size: 14px; color: #fff; background-color: #2196f3; border: none; border-radius: 4px;">Done</button>
+  `;
+  popover.style.display = 'block';
+
+  const buttonRect = analyzeButton.getBoundingClientRect();
+  popover.style.left = `${buttonRect.left}px`;
+  popover.style.top = `${buttonRect.bottom + 8}px`;
+
+  const doneButton = popover.querySelector('button');
+  doneButton.addEventListener('click', () => {
+    popover.style.display = 'none';
+  });
+}
+
 // Function to analyze the review using OpenAI API
-async function analyzeReview(reviewText, rating, time) {
+async function analyzeReview(reviewText, rating, time, analyzeButton) {
   message = { action: 'analyze_review', place: placeInfo, text: reviewText, rating: rating, time: time };
   console.log(message);
   chrome.runtime.sendMessage(message, (response) => {
     if (response.success) {
-      alert(`Analysis result: ${JSON.stringify(response.result)}`);
+      const popover = createPopoverContainer();
+      document.body.appendChild(popover);
+      console.log(response.result);
+      showPopoverContainer(popover, analyzeButton, response.result.rate, response.result.explanation);
     } else {
       alert('Failed to analyze the review. Please try again later.');
     }
