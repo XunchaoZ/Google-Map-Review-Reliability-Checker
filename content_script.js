@@ -40,7 +40,9 @@ async function analyzeReview(reviewText, rating, time) {
 
 // Function to add "Analyze the review" option to review menus
 function addAnalyzeButtonToMenus() {
-  placeInfo = document.querySelector('div.TIHn2').outerText;
+  if (document.querySelector('div.TIHn2')) {
+    placeInfo = document.querySelector('div.TIHn2').outerText;
+  }
   const reviewMenus = document.querySelectorAll('button.PP3Y3d.S1qRNe');
   for (const menu of reviewMenus) {
     let review = menu.parentNode.parentNode.parentNode.parentNode;
