@@ -24,6 +24,46 @@ function createAnalyzeButton(reviewText, rating, time) {
   return analyzeButton;
 }
 
+// Function to create a loading animation
+function createLoadingAnimation() {
+  const loadingContainer = document.createElement('div');
+  loadingContainer.style.display = 'flex';
+  loadingContainer.style.alignItems = 'center';
+
+  const spinner = document.createElement('div');
+  spinner.style.border = '4px solid #f3f3f3';
+  spinner.style.borderTop = '4px solid #3498db';
+  spinner.style.borderRadius = '50%';
+  spinner.style.width = '24px';
+  spinner.style.height = '24px';
+  spinner.style.animation = 'spin 2s linear infinite';
+
+  const loadingText = document.createElement('span');
+  loadingText.textContent = 'Analysis result loading...';
+  loadingText.style.marginLeft = '8px';
+  loadingText.style.animation = 'fadeinout 2s infinite';
+
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeinout {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  loadingContainer.appendChild(spinner);
+  loadingContainer.appendChild(loadingText);
+
+  return loadingContainer;
+}
+
+
 // Function to create the popover container
 function createPopoverContainer() {
   const popover = document.createElement('div');
@@ -50,6 +90,7 @@ function createPopoverContainer() {
 
 // Function to show the popover container with the analysis result
 function showPopoverContainer(popover, analyzeButton, result, explanation) {
+  document.body.appendChild(popover);
   const ratingColor = result >= 5 ? 'green' : 'red';
   popover.innerHTML += `
     <h2 style="color: ${ratingColor}; margin-top: 0;">Rating: ${result}/10</h2>
@@ -57,10 +98,8 @@ function showPopoverContainer(popover, analyzeButton, result, explanation) {
     <button style="cursor: pointer; padding: 6px 12px; font-size: 14px; color: #fff; background-color: #2196f3; border: none; border-radius: 4px;">Done</button>
   `;
   popover.style.display = 'block';
-
-  const buttonRect = analyzeButton.getBoundingClientRect();
-  popover.style.left = `${buttonRect.left}px`;
-  popover.style.top = `${buttonRect.bottom + 8}px`;
+  popover.style.left = `400px`;
+  popover.style.top = `100px`;
 
   const doneButton = popover.querySelector('button');
   doneButton.addEventListener('click', () => {
@@ -70,14 +109,22 @@ function showPopoverContainer(popover, analyzeButton, result, explanation) {
 
 // Function to analyze the review using OpenAI API
 async function analyzeReview(reviewText, rating, time, analyzeButton) {
+  const popover = createPopoverContainer();
+  document.body.appendChild(popover);
+  popover.style.display = 'block';
+  const loadingAnimation = createLoadingAnimation();
+  popover.style.left = `400px`;
+  popover.style.top = `100px`;
+  popover.appendChild(loadingAnimation);
+
   message = { action: 'analyze_review', place: placeInfo, text: reviewText, rating: rating, time: time };
   console.log(message);
   chrome.runtime.sendMessage(message, (response) => {
     if (response.success) {
-      const popover = createPopoverContainer();
-      document.body.appendChild(popover);
+      popover.remove();
+      const newpopover = createPopoverContainer();
       console.log(response.result);
-      showPopoverContainer(popover, analyzeButton, response.result.rate, response.result.explanation);
+      showPopoverContainer(newpopover, analyzeButton, response.result.rate, response.result.explanation);
     } else {
       alert('Failed to analyze the review. Please try again later.');
     }
