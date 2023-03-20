@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "ReviewIntegrityChecker",
+    "name": "ReviewReliabilityChecker",
     "version": "1.0",
     "description": "Analyze the integrity of reviews on Google Maps using OpenAI's language model",
     "permissions": [

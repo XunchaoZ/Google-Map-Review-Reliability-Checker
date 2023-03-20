@@ -8,7 +8,7 @@ function createAnalyzeButton(reviewText, rating, time) {
   analyzeButton.style.padding = '6px 12px';
   analyzeButton.style.fontSize = '14px';
   analyzeButton.style.color = '#ffffff';
-  analyzeButton.style.backgroundColor = '#9e9e9e';
+  analyzeButton.style.backgroundColor = '#5fce72';
   analyzeButton.style.border = 'none';
   analyzeButton.style.borderRadius = '4px';
   analyzeButton.style.marginLeft = 'auto';
@@ -21,6 +21,7 @@ function createAnalyzeButton(reviewText, rating, time) {
     const time = analyzeButton.getAttribute('data-time');
     analyzeReview(reviewText, rating, time, analyzeButton);
   });
+  
   return analyzeButton;
 }
 
@@ -72,7 +73,7 @@ function createPopoverContainer() {
   popover.style.border = '1px solid #ccc';
   popover.style.borderRadius = '4px';
   popover.style.padding = '16px';
-  popover.style.width = '200px';
+  popover.style.width = '400px';
   popover.style.zIndex = '1000';
   popover.style.display = 'none';
   popover.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
@@ -91,15 +92,21 @@ function createPopoverContainer() {
 // Function to show the popover container with the analysis result
 function showPopoverContainer(popover, analyzeButton, result, explanation) {
   document.body.appendChild(popover);
-  const ratingColor = result >= 5 ? 'green' : 'red';
+
+  let ratingColor = 'green';
+  if (result <= 3) ratingColor = 'red';
+  else if (result <= 6) ratingColor = 'orange';
+
   popover.innerHTML += `
-    <h2 style="color: ${ratingColor}; margin-top: 0;">Rating: ${result}/10</h2>
+    <h2 style="color: ${ratingColor}; margin-top: 0;">Reliability Rating: ${result}/10</h2>
     <p>${explanation}</p>
-    <button style="cursor: pointer; padding: 6px 12px; font-size: 14px; color: #fff; background-color: #2196f3; border: none; border-radius: 4px;">Done</button>
+    <button style="margin-top: 10px; margin-bottom: 5px; cursor: pointer; padding: 6px 12px; font-size: 14px; color: #fff; background-color: #2196f3; border: none; border-radius: 4px;">Done</button>
+    <footer style="color: #636362;font-size: 10px;">Disclaimer: Since we do not have any information about the reviewer, we cannot be completely sure about their authenticity. It is also important to note that this is only one review and other reviews should also be considered for a more accurate assessment.</footer>
   `;
+
   popover.style.display = 'block';
-  popover.style.left = `400px`;
-  popover.style.top = `100px`;
+  popover.style.left = `400px`; // 400
+  popover.style.top = `100px`; // 100
 
   const doneButton = popover.querySelector('button');
   doneButton.addEventListener('click', () => {
@@ -126,6 +133,7 @@ async function analyzeReview(reviewText, rating, time, analyzeButton) {
       console.log(response.result);
       showPopoverContainer(newpopover, analyzeButton, response.result.rate, response.result.explanation);
     } else {
+      popover.remove();
       alert('Failed to analyze the review. Please try again later.');
     }
   });
@@ -143,7 +151,7 @@ function addAnalyzeButtonToMenus() {
     if (review) {
       reviewText = review.querySelector('span.wiI7pd').outerText;
       rating = review.querySelector('span.kvMYJc').ariaLabel;
-      time = review.querySelector('div.DU9Pgb').outerText;
+      time = review.querySelector('div.DU9Pgb').outerText.split('\n')[0];
       if (!menu.previousElementSibling || !menu.previousElementSibling.classList.contains('analyze-review-button')) {
         const analyzeButton = createAnalyzeButton(reviewText, rating, time);
         let bar = review.querySelector('div.DU9Pgb');

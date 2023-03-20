@@ -1,9 +1,18 @@
 const OPENAI_API_KEY1 = "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";
 const OPENAI_API_KEY2 = "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";
 
+const disclaimers = [
+  "Since we do not have any information about the reviewer, we cannot be completely sure about their authenticity.",
+  "It is important to note that this is only one review and other reviews should also be considered for a more accurate assessment.",
+  "It is important to consider other reviews as well before making a final decision.",
+  "It should be taken with a grain of salt and considered alongside other reviews.",
+  "It is recommended to read other reviews as well to get a more accurate assessment."
+];
+
 var placeInfo = {}; // name, rating, address
 
 function parsePlaceInfo(placeInfoStr) {
+  console.log(placeInfoStr);
   const tokens = placeInfoStr.split('\n');
   return {
     name: tokens[0],
@@ -18,20 +27,25 @@ function generatePrompt(reviewInfo) {
   const placeInfo = parsePlaceInfo(reviewInfo.place);
   console.log(placeInfo);
   return `${placeInfo.name} is a ${placeInfo.type}.
-  The overall rating of the restaurant is ${placeInfo.rating} (lowest rating is 1 and highest rating is 5).
-  There are a total of ${placeInfo.numReviews} reviews for the restaurant.
-  The following is a review for the restaurant:
+  The overall rating of this place is ${placeInfo.rating} (lowest rating is 1 and highest rating is 5).
+  There are a total of ${placeInfo.numReviews} reviews for this place.
+  The following is a review for this place:
   "${reviewInfo.text}"
   The reviewer gave a rating of ${reviewInfo.rating} (lowest rating is 1 and highest rating is 5).
-  The review was written ${reviewInfo.time}.
+  The review was written ${reviewInfo.time}. Note that the earlier the review was written, the less reliable the review is. Reviews written with the past 6 months are considered relevant.
   Do you think the review is reliable?
+
   Please return an answer between 0 to 10, where 0 stands for absolutely not reliable and 10 stands for absolutely reliable.
   Your answer should include the number first and some explanation. 
-  Your response should in strict JSON format that includes the opening and closing curly brackets. 
+  Your response should be in strict JSON format that includes the opening and closing curly brackets. 
   The first key is called "rate" and should include a single number, which is the number you provided out of 10; the second key is called "explanation", which should include your explanation.
-  In the explanation you should only provide information about this review.
-  Please don't say that you can't say for sure or mention anything about considering multiple reviews.
-  Please be confident.`;
+  Please DO NOT include any sentences that have the same meaning as the following:
+    "Since we do not have any information about the reviewer, we cannot be completely sure about their authenticity."
+    "It is important to note that this is only one review and other reviews should also be considered for a more accurate assessment."
+    "it is important to consider other reviews as well before making a final decision."
+    "it should be taken with a grain of salt and considered alongside other reviews."
+    "It is recommended to read other reviews as well to get a more accurate assessment."
+  `;
 }
 
 async function moderation(reviewText) {
@@ -61,8 +75,49 @@ async function moderation(reviewText) {
   }
 }
 
+async function compareDisclaimer(lastSentence) {
+  const systemContent = `You are a bot that checks if sentences have the same meaning. Only answer "Yes" or "No".`;
+  let userPrompt = `You are given the following sentence: "${lastSentence}". Is the above sentence the same meaning as any one of the following sentences?\n`;
+  for (const idx in disclaimers) {
+    userPrompt += `\t"${disclaimers[idx]}"\n`;
+  }
+  userPrompt += 'Please only answer "Yes" or "No" and nothing else.'
+
+  console.log(userPrompt);
+
+  const apiURL = "https://api.openai.com/v1/chat/completions";
+  const response = await fetch(apiURL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${OPENAI_API_KEY2}`
+    },
+    body: JSON.stringify({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {role: "system", content: systemContent},
+        {role: "user", content: userPrompt}
+      ],
+      temperature: 0.1
+    })
+  });
+  const data = await response.json();
+  const gptResponse = data.choices[0].message.content;
+  console.log(gptResponse);
+  return gptResponse;
+}
+
 async function analyzeReview(reviewInfo) {
-  const systemContent = `You are a bot that checks for reliability of restaurant reviews.
+  if (reviewInfo.text === "") {
+    return {
+      success: true,
+      result: {
+        rate: 0,
+        explanation: "The reviewer didn't give any comments."
+      }
+    }
+  }
+  const systemContent = `You are a bot that checks for reliability of place reviews.
                        Check if the review is genuine and warn the users if the review is a spam.`;
   const userPrompt = generatePrompt(reviewInfo);
   try {
@@ -72,9 +127,14 @@ async function analyzeReview(reviewInfo) {
       for (const cat in moderationResult.categories) {
         flagMsg += " " + String(cat);
       }
-      return { success: false, result: flagMsg };
+      return { 
+        success: true, 
+        result: {
+          rate: 0,
+          explanation: flagMsg
+        }
+      };
     }
-
     const apiURL = "https://api.openai.com/v1/chat/completions";
     const response = await fetch(apiURL, {
       method: "POST",
@@ -88,7 +148,7 @@ async function analyzeReview(reviewInfo) {
           {role: "system", content: systemContent},
           {role: "user", content: userPrompt}
         ],
-        temperature: 0.53
+        temperature: 0.253
       })
     });
     const data = await response.json();
@@ -99,6 +159,13 @@ async function analyzeReview(reviewInfo) {
     } catch {
       gptResponse = `{${gptResponse}}`;
       gptResponseJSON = JSON.parse(gptResponse);
+    }
+    const sentences = gptResponseJSON.explanation.split(/(?<=\.|\?|!)\s/);
+    const lastSentence = sentences[sentences.length - 1];
+    const compareDisclaimerResult = await compareDisclaimer(lastSentence);
+    if (compareDisclaimerResult === "Yes.") {
+      sentences.pop();
+      gptResponseJSON.explanation = sentences.join(" ");
     }
     return { success: true, result: gptResponseJSON };
   } catch (err) {
