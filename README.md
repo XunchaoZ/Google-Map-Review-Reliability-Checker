@@ -75,6 +75,8 @@ Go to the path of the directory returned from previous step "pwd" and click "Sel
 
 ### Usage
 Open [Google Map](https://www.google.com/maps), for any place, there would be an "Analyze Review" button besides the Author's name for any review.
+![pasted image 0](https://user-images.githubusercontent.com/84045147/226253606-e1af72a3-a21a-4937-8bb4-58cdf6b61daa.png)
+
 
 ## Constraints
 
