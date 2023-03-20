@@ -51,7 +51,7 @@ We use the OpenAI chat completion API to determine whether the last sentence of 
 ### Download the source from repo
 Clone the repository to your local directory
 ```
-git clone https://github.com/XunchaoZ/Google-Map-Review-Integrity-Checker.git
+git clone https://github.com/XunchaoZ/Google-Map-Review-Reliability-Checker.git
 ```
 Remember the path of the directory
 ```
