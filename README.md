@@ -46,6 +46,35 @@ The API will give a rating out of 10 to evaluate the reliability of the review, 
 The output of the OpenAI will often include a disclaimer statement at the end. Instead of having the disclaimer at the end of the response, we put the disclaimer as a footer at the bottom of the popover window.
 We use the OpenAI chat completion API to determine whether the last sentence of the analysis result is a disclaimer, and if yes, we remove the last sentence from the response.
 
+## Installation Guide
+
+### Download the source from repo
+Clone the repository to your local directory
+```
+git clone https://github.com/XunchaoZ/Google-Map-Review-Integrity-Checker.git
+```
+Remember the path of the directory
+```
+cd Google-Map-Review-Integrity-Checker
+pwd
+```
+### API key
+Create a file called API_key.json and put your OpenAI API key inside
+```
+echo "{
+\"OPENAI\": \"your_api_key_here\"
+}">API_key.json
+```
+Remember to replace ```your_api_key_here``` with your OpenAI API key
+
+### Upload extension
+Open ```chrome://extensions/``` OR click on the three dots on top right of the Chrome -> More tools -> Extensions
+On the top right corner enable "Developer mode" 
+On the top left corner click "Load unpacked"
+Go to the path of the directory returned from previous step "pwd" and click "Select folder"
+
+### Usage
+Open [Google Map](https://www.google.com/maps), for any place, there would be an "Analyze Review" button besides the Author's name for any review.
 
 ## Constraints
 
