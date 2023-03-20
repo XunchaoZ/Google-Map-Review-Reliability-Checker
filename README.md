@@ -47,15 +47,14 @@ The output of the OpenAI will often include a disclaimer statement at the end. I
 We use the OpenAI chat completion API to determine whether the last sentence of the analysis result is a disclaimer, and if yes, we remove the last sentence from the response.
 
 
+## Constraints
 
-
-
-## Google Maps Places API
+### Google Maps Places API
 
 Initially, our plan was to use Google Maps Platform's Places API to retrieve all the reviews from a place and then use OpenAI API to verify the reliability of those reviews. However, as we dug deeper into the functionality of the Google Maps Platform, we realized that accessing all the reviews requires us to have funds on our Google Cloud account. Unfortunately, we did not have the resources to continue with this approach. As a result, we left the functionality as implemented but unused, and moved on to other solutions. For more details on how we implemented this feature, please refer to the 'placesapi.js' file in our codebase. Despite this setback, we remain committed to providing users with reliable and accurate information about the credibility of reviews on Google Maps.
 
 
-## AWS
+### AWS
 
 In the initial development of our web extension, we did not use API keys as variables. While this was a temporary solution, we recognized that it was not ideal and could pose security risks. After researching potential solutions, we considered using AWS Management Console's Key Management Service to store our API keys securely.
 
