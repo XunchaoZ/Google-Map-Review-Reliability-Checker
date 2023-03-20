@@ -1,6 +1,3 @@
-const OPENAI_API_KEY1 = "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";
-const OPENAI_API_KEY2 = "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";
-
 const disclaimers = [
   "Since we do not have any information about the reviewer, we cannot be completely sure about their authenticity.",
   "It is important to note that this is only one review and other reviews should also be considered for a more accurate assessment.",
