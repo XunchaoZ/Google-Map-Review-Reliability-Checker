@@ -55,7 +55,7 @@ git clone https://github.com/XunchaoZ/Google-Map-Review-Reliability-Checker.git
 ```
 Remember the path of the directory
 ```
-cd Google-Map-Review-Integrity-Checker
+cd Google-Map-Review-Reliability-Checker
 pwd
 ```
 ### API key
