@@ -1,5 +1,7 @@
+import { API_KEY } from "./API_key.json"
+
 const OPENAI_API_KEY1 = "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";
-const OPENAI_API_KEY2 = "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";
+const OPENAI_API_KEY2 = API_KEY.OPENAI;
 
 let placeInfo = {
   name: "The Lancaster Smokehouse",
@@ -146,9 +148,12 @@ async function compareDisclaimer(lastSentence) {
     })
   });
   const data = await response.json();
+  console.log(data);
   const gptResponse = data.choices[0].message.content;
   return gptResponse;
 }
+
+console.log(OPENAI_API_KEY2);
 
 const testSentence = "The reviewer gave a rating of 2 stars and provided both positive and negative feedback, which suggests that the review is not a spam.";
 

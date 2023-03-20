@@ -6,8 +6,6 @@ const disclaimers = [
   "It is recommended to read other reviews as well to get a more accurate assessment."
 ];
 
-var placeInfo = {}; // name, rating, address
-
 function parsePlaceInfo(placeInfoStr) {
   console.log(placeInfoStr);
   const tokens = placeInfoStr.split('\n');
@@ -45,13 +43,13 @@ function generatePrompt(reviewInfo) {
   `;
 }
 
-async function moderation(reviewText) {
+async function moderation(reviewText, OPENAI_API_KEY) {
   const apiURL = "https://api.openai.com/v1/moderations";
   const response = await fetch(apiURL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENAI_API_KEY2}`
+      "Authorization": `Bearer ${OPENAI_API_KEY}`
     },
     body: JSON.stringify({
       input: reviewText
@@ -72,13 +70,14 @@ async function moderation(reviewText) {
   }
 }
 
-async function compareDisclaimer(lastSentence) {
+async function compareDisclaimer(lastSentence, OPENAI_API_KEY) {
   const systemContent = `You are a bot that checks if sentences have the same meaning. Only answer "Yes" or "No".`;
   let userPrompt = `You are given the following sentence: "${lastSentence}". Is the above sentence the same meaning as any one of the following sentences?\n`;
   for (const idx in disclaimers) {
     userPrompt += `\t"${disclaimers[idx]}"\n`;
   }
-  userPrompt += 'Please only answer "Yes" or "No" and nothing else.'
+  userPrompt += 'Please only answer "Yes" or "No" and nothing else.\n';
+  userPrompt += 'The sentence "the review appears to be genuine and reliable" does not have the same meaning as any of the sentences above.'
 
   console.log(userPrompt);
 
@@ -87,7 +86,7 @@ async function compareDisclaimer(lastSentence) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${OPENAI_API_KEY2}`
+      "Authorization": `Bearer ${OPENAI_API_KEY}`
     },
     body: JSON.stringify({
       model: "gpt-3.5-turbo",
@@ -118,7 +117,13 @@ async function analyzeReview(reviewInfo) {
                        Check if the review is genuine and warn the users if the review is a spam.`;
   const userPrompt = generatePrompt(reviewInfo);
   try {
-    const moderationResult = await moderation(reviewInfo.text);
+    const apiKeyResponse = await fetch(chrome.runtime.getURL("API_key.json"));
+    const apiKeyData = await apiKeyResponse.json();
+    const OPENAI_API_KEY = apiKeyData.OPENAI;
+
+    const moderationResult = await moderation(
+      reviewInfo.text, OPENAI_API_KEY
+    );
     if (moderationResult.flagged) {
       let flagMsg = "The review is flagged for the following inappropriate elements:";
       for (const cat in moderationResult.categories) {
@@ -137,7 +142,7 @@ async function analyzeReview(reviewInfo) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${OPENAI_API_KEY2}`
+        "Authorization": `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
         model: "gpt-3.5-turbo",
@@ -159,7 +164,9 @@ async function analyzeReview(reviewInfo) {
     }
     const sentences = gptResponseJSON.explanation.split(/(?<=\.|\?|!)\s/);
     const lastSentence = sentences[sentences.length - 1];
-    const compareDisclaimerResult = await compareDisclaimer(lastSentence);
+    const compareDisclaimerResult = await compareDisclaimer(
+      lastSentence, OPENAI_API_KEY
+    );
     if (compareDisclaimerResult === "Yes.") {
       sentences.pop();
       gptResponseJSON.explanation = sentences.join(" ");
